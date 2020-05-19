@@ -1,0 +1,69 @@
+#' Information from Symanto projects
+#'
+#' @aliases load_info
+#'
+#' @description
+#' This function allows the user to get the Symanto projects and the informaton related
+#' to it, namely, statistics of terms, data and configuration.
+#'
+#' @usage
+#' load_info(type_info, project_Id)
+#'
+#' @param type_info String. Options are "projects", "terms_stats", "data_stats" and "config".
+#' @param project_Id When \code{type_info} is "terms_stats", "data_stats" or "config", this is
+#' the number of the project to analyze.
+#'
+#' @return
+#' \itemize{
+#'   \item When \code{type_info = "projects"}, a data frame.
+#'   \item Otherwise, a JSON file.
+#' }
+#'
+#' @author
+#' Symanto Data Quality Team
+#'
+#' @seealso
+#' \code{\link{}}
+#'
+#' @examples
+#' # Download projects:
+#' projects <- load_info("projects")
+#'
+#' # Choose a certain project:
+#' row = 1
+#'
+#' # Download the terms and stats from the project selected:
+#' id <- projects[row, "id"]
+#' terms <- load_info("terms_stats", id)
+#'
+#' # Download the configuration from the project selected:
+#' conf <- load_info("config", id)
+#'
+#' @importFrom httr GET content
+#' @importFrom jsonlite fromJSON
+#'
+#' @export
+
+load_info <- function(type_info, project_Id) {
+  token <- "eyJhbGciOiJSUzI1NiIsImtpZCI6IjcyYmQyZTFjZjI5NmE0ZjAzOTM5MTQ3MGM1YzFjMTA3IiwidHlwIjoiSldUIn0.eyJuYmYiOjE1ODA3NDE3MTEsImV4cCI6MTU4MDgyODExMSwiaXNzIjoiaHR0cHM6Ly9kZXYtYWNjb3VudC5zeW1hbnRvLm5ldCIsImF1ZCI6WyJodHRwczovL2Rldi1hY2NvdW50LnN5bWFudG8ubmV0L3Jlc291cmNlcyIsImNvbmZpZy1hcGkiLCJhdXRoLWFwaSIsInBpcGVsaW5lLWFwaSJdLCJjbGllbnRfaWQiOiJjb25maWctdG9vbC1kZXYiLCJzdWIiOiJlODc4MzgxZC1lZDY3LTQxNmYtYjg5NS1iZTAzOTFkNTE3MDMiLCJhdXRoX3RpbWUiOjE1ODA3NDE3MTEsImlkcCI6Ik1pY3Jvc29mdCIsIkFzcE5ldC5JZGVudGl0eS5TZWN1cml0eVN0YW1wIjoiMTRhY2RhYjUtMzdmZC00OGVlLWEwYzgtZWQ0OTNiMmZjYWE2Iiwicm9sZSI6IlN5bWFudG9Vc2VyIiwiZmVhdHVyZSI6WyJpbmxpbmUtZWRpdGluZyIsInBheW1lbnQiLCJzcy1idW5kbGUtc2VsZWN0aW9uIl0sInByZWZlcnJlZF91c2VybmFtZSI6ImZyYW5jaXNjby5yYW5nZWxAc3ltYW50by5uZXQiLCJuYW1lIjoiZnJhbmNpc2NvLnJhbmdlbEBzeW1hbnRvLm5ldCIsImVtYWlsIjpbImZyYW5jaXNjby5yYW5nZWxAc3ltYW50by5uZXQiLCJmcmFuY2lzY28ucmFuZ2VsQHN5bWFudG8ubmV0Il0sImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJzdF9uYW1lIjoiRnJhbmNpc2NvIE1hbnVlbCIsImxhc3RfbmFtZSI6IlJhbmdlbCBQYXJkbyIsInNjb3BlIjpbIm9wZW5pZCIsInByb2ZpbGUiLCJjb25maWctYXBpIiwiYXV0aC1hcGkiLCJwaXBlbGluZS1hcGkiXSwiYW1yIjpbImV4dGVybmFsIl19.kCMO59V1HKKsAtrO2XVsQEouH0w1d1inzn9fNEXj1jJRP2t1vs2GNMbEAFmEC2Lkwa1_usd46rZqv8PQY6TryNPPly98gjp34FS_eyp2jX9X9k0K3_hcgKJq7QnwXdaPJMARGxXTLamWl1Fk2ws7kGz7b_F8NCD7HuIfrKiOs7oqvY3fCDs0Ji7NsH2KtYbc--kY8TRZ5KISrN2aMcKDmF3n5FOQo_p9RVdd3hht5LZIzrojfRuBYAuChAHok65bEgmUOt18bEBLC_EiBcoVzRHl88WO0bpwpdTxz7GcLSHlj3bDvY-5sW3dK8OofD-iqpub7QLi_8L9bUHQvnlLyg"
+
+  switch(type_info,
+         projects = {api <- "https://symanto-configuration-api-dev.azurewebsites.net/analysisprojects"},
+         terms_stats = {api <- paste("https://symanto-configuration-api-dev.azurewebsites.net/post/termsstats?analysisProjectId=", project_Id, "&excludeErrorPosts=true", sep = "")},
+         data_stats = {api <- paste("https://symanto-configuration-api-dev.azurewebsites.net/analysisprojects/datasourcestats?analysisProjectId=", project_Id, "&excludeErrorPosts=true", sep = "")},
+         config = {api <- paste("https://symanto-configuration-api-dev.azurewebsites.net/analysisprojects/", project_Id, sep = "")},
+         stop("Error. Check the correct options.")
+  )
+
+  response <- GET(api, add_headers(Authorization = paste("Bearer", token, sep = " ")))
+  text_info <- content(response, "text")
+  json_info <- fromJSON(text_info, flatten = TRUE)
+
+  if (type_info == "projects") {
+    info <- as.data.frame(json_info)
+  }else{
+    info <- json_info
+  }
+
+  return(info)
+}

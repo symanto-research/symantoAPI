@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1581320978035.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1902904422",
+    "id" : "6906F62E",
+    "lastKnownWriteTime" : 1581066666,
+    "last_content_update" : 1581066666,
+    "path" : "C:/Users/gvinue/Desktop/symanto/../symanto_comp/scripts/DowloadProjectsStats v2.R",
+    "project_path" : "../symanto_comp/scripts/DowloadProjectsStats v2.R",
+    "properties" : {
+        "cursorPosition" : "10,2",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

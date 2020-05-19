@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1581321228114.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1511063579",
+    "id" : "F013ACC8",
+    "lastKnownWriteTime" : 1581323726,
+    "last_content_update" : 1581323726649,
+    "path" : "C:/Users/gvinue/Desktop/symanto/R/load_info.R",
+    "project_path" : "R/load_info.R",
+    "properties" : {
+        "cursorPosition" : "18,34",
+        "scrollLine" : "8"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
