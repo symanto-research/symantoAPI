@@ -2,17 +2,19 @@
 % Please edit documentation in R/get_emotion.R
 \name{get_emotion}
 \alias{get_emotion}
-\title{Get sentiment from a text}
+\title{Emotions}
 \usage{
-get_emotion(text, language, all = FALSE, encoding = "UTF-8", token)
+get_emotion(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
 }
 \arguments{
-\item{text}{String with the text.}
+\item{url_api}{URL to the API.}
 
-\item{language}{String with the language. Supported languages are 
+\item{text}{String with the texts. A set of maximum 512 texts is allowed.}
+
+\item{language}{Language of the text. Supported languages are 
 "en" (English), "de" (German) and "es" (Spanish).}
 
-\item{all}{Boolean. If TRUE, all the sentiments probabilities
+\item{all}{Boolean. If TRUE, all the probabilities
 are displayed. If FALSE, only the largest probability is displayed.}
 
 \item{encoding}{Character encoding. Default "UTF-8".}
@@ -20,39 +22,57 @@ are displayed. If FALSE, only the largest probability is displayed.}
 \item{token}{The access token.}
 }
 \value{
-A data frame with columns:
-\enumerate{
-  \item text Text analyzed.
-  \item emotion Emotion that the text conveys.
-  \item probab Probability of the emotion returned.
-}
+A data frame with the texts and the probabilities of the 
+psychological features obtained.
 }
 \description{
-For a text written in a given language, this function extracts the sentiment 
-it conveys. Returned labels are "anger", "joy", "love", "sadness" and 
-unrecognized".
+For a text written in a given language, this function extracts the emotions that
+it conveys. Returned labels are \emph{anger}, \emph{joy}, \emph{love}, 
+\emph{sadness} and \emph{surprise}.
+}
+\note{
+The type of array for one text is: \cr
+data <- "[{\"id\":\"1\",\"text\":\"love\",\"language\":\"en\"}]" \cr
+For more than one text is: \cr
+data <- "[{\"id\":\"1\",\"text\":\"love\",\"language\":\"en\"}, 
+\cr
+          {\"id\":\"2\",\"text\":\"hate\",\"language\":\"en\"}]" \cr
+(write it in one line). 
+In the first case, add a curly bracket after the first box bracket and 
+before the last box bracket. In the second case, add the curly brackets
+for every set of id, text and language.
 }
 \examples{
 \dontrun{
-token <- "Request your API Key: https://developer.symanto.net/"
+token <- "Request your API Key: https://developers.symanto.net/signup"
+url_api <- "https://api.symanto.net"
+
+# For only one text:
 # English:
-text <- "I am very happy"
+text <- "I love the service."
 language <- "en"
-get_emotion(text, language, TRUE, "UTF-8", token)
-get_emotion(text, language, FALSE, "UTF-8", token)
+get_emotion(url_api, text, language, TRUE, "UTF-8", token)
+get_emotion(url_api, text, language, FALSE, "UTF-8", token)
 
 # German:
-text <- "Ich bin sehr zufrieden"
+text <- "Ich bin sehr zufrieden."
 language <- "de"
-get_emotion(text, language, TRUE, "UTF-8", token)
+get_emotion(url_api, text, language, TRUE, "UTF-8", token)
+get_emotion(url_api, text, language, FALSE, "UTF-8", token)
 
 # Spanish:
-text <- "Estoy muy contento"
+text <- "Estoy muy contento."
 language <- "es"
-gs <- get_emotion(text, language, TRUE, "UTF-8", token)
-gs
-# Probabilities sum indeed one:
-sum(gs[grepl("prob", names(gs))])
+get_emotion(url_api, text, language, TRUE, "UTF-8", token)
+get_emotion(url_api, text, language, FALSE, "UTF-8", token)
+
+# For more than one text:
+# English:
+df <- data.frame(text = c("love", "hate"), language = c("en", "en"))
+text <- df$text
+language <- df$language
+get_emotion(url_api, text, language, all = TRUE, "UTF-8", token)
+get_emotion(url_api, text, language, all = FALSE, "UTF-8", token)
 }
 
 }

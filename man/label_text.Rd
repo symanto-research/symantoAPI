@@ -4,19 +4,35 @@
 \alias{label_text}
 \title{Label texts}
 \usage{
-label_text(excel_file, user_actions, encoding = "UTF-8", token, verbose = FALSE)
+label_text(url_api, excel_file, user_actions, encoding = "UTF-8", token, 
+           texts_in_blocks, user_language = NULL, verbose = FALSE)
 }
 \arguments{
-\item{excel_file}{Excel file.}
+\item{url_api}{URL to the API.}
 
-\item{user_actions}{Vector with the set of columns (psychological properties) 
-that the user wants to fill in. Possible values are "sentiments", "emotions", 
-"action_seeking", "fact_oriented", "self_revealing", "personality" and 
-"information_seeking".}
+\item{excel_file}{Excel file. It must contain at least one column with the texts,
+named "Text" or "text". Another column with the language of the texts is 
+optional (see the \code{user_language} parameter below). Other complementary columns 
+can be also added to be incorporated in the returned data frame.}
+
+\item{user_actions}{Vector with the set of psychological properties that the user 
+wants to obtain. Possible values are "personality", 
+"communication", "emotions", "ekman_emotions", "sentiments", "topic_sentiments" 
+and "language".}
 
 \item{encoding}{Character encoding. Default "UTF-8".}
 
 \item{token}{The access token.}
+
+\item{texts_in_blocks}{Number of texts in every block. Basically, if there are 
+50 texts and \code{texts_in_blocks} is 25, there will be two blocks with 25 texts. 
+The procedure will be applied to both of them iteratively. 
+This method is much faster than going text by text.}
+
+\item{user_language}{If the language of the texts is not available, 
+\code{\link{get_language_detection}} will be used to assign a language to 
+every text. For the few cases where this tool fails, the assigned language is
+this parameter provided by the user. Default NULL.}
 
 \item{verbose}{Provides a flow of information.}
 }
@@ -25,49 +41,69 @@ The \code{excel_file} filled with the probablities related to the
 psychological properties desired by the user.
 }
 \description{
-Given a certain (Excel) file with some posts and all the empty columns related 
-to sentiments, emotions and Basic User Aspects (BUAs), this function
-fills the columns that the user wants to.
+Given a certain (Excel) file with some posts, this function assigns the 
+psychological features that the user wants to. In the interests of computational
+speed, the whole set of texts is splitted into smaller blocks.
 }
 \details{
 \itemize{
-  \item The sentiments are \emph{positive} and \emph{negative}.
+  \item The personality traits are \emph{emotional} and \emph{rational}.
+  \item The communication style are \emph{action_seeking}, \emph{fact_oriented}, 
+  \emph{information_seeking} and \emph{self_revealing}.
   \item The emotions are \emph{anger}, \emph{joy}, \emph{love}, 
-  \emph{sadness} and \emph{unrecognized}.
-  \item The personality traits are \emph{emotional} or \emph{rational}.
-  \item The self revealing checks whether the author shares personal
-        feelings (\emph{yes}) or not (\emph{no}).
-  \item The information seeking checks whether the author shows an active 
-        interest in a subject (\emph{yes}) or not (\emph{no}).
-  \item The action seeking checks whether the author seeks to create an 
-        impact (\emph{yes}) or not (\emph{no}).
-  \item The fact oriented checks whether the author expresses 
-        objective facts (\emph{yes}) or not (\emph{no}).
+  \emph{sadness} and \emph{surprise}.
+  \item The Ekman's emotions are \emph{anger}, \emph{disgust}, \emph{fear}, 
+  \emph{joy} and \emph{no_emotion}, \emph{sadness} and \emph{surprise}.
+  \item The sentiments are \emph{positive} and \emph{negative}.
 }
+}
+\note{
+The accepted codes for the \code{user_language} param are as follows: 
+"ar" (Arabic), "de" (German), "en" (English), "es" (Spanish),
+"fr" (French), "it" (Italian), "nl" (Dutch), "pt" (Portuguese),
+"ru" (Russian), "tr" (Turkish) and "zh" (Chinese).
+
+The lowest common denominator for creating blocks of texts in every function is 32, 
+so this should be the largest possible number in \code{texts_in_blocks} when all the
+psychological properties are selected in \code{user_actions}. However, the
+Ekman's emotions seem not to accept this number of texts, so we recommend
+to choose 5 if the Ekman's emotions belong to the desired \code{user_actions}.
+
+Due to the internal procedure of the computational model, only blocks of texts
+of the same language are created.
 }
 \examples{
 \dontrun{
 #library(openxlsx)
-token <- "Request your API Key: https://developer.symanto.net/"
+token <- "Request your API Key: https://developers.symanto.net/signup"
+url_api <- "https://api.symanto.net"
 
 # All actions:
-#user_actions <- c("sentiments", "emotions", "action_seeking", "fact_oriented", 
-#                  "self_revealing", "personality", "information_seeking")  
-#excel_dest_l1 <- label_text(excel_orig, user_actions, "UTF-8", token, TRUE)
+user_actions <- c("personality", "communication", "emotions", "ekman_emotions", 
+                  "sentiments", "topic_sentiments", "language")  
+excel_dest_l1 <- label_text(url_api, excel_orig, user_actions, "UTF-8", 
+                            token, 5, NULL, TRUE)
 #write.xlsx(excel_dest_l1, "excel_dest_l1.xlsx")
 
 # A sample of actions:
-user_actions <- c("sentiments", "fact_oriented", "personality")  
-excel_dest_l2 <- label_text(excel_orig, user_actions, "UTF-8", token, TRUE)
+user_actions <- c("personality", "sentiments")  
+excel_dest_l2 <- label_text(url_api, excel_orig, user_actions, "UTF-8", 
+                            token, 32, NULL, TRUE)
 #write.xlsx(excel_dest_l2, "excel_dest_l2.xlsx")
+
+excel_orig1 <- excel_orig[, c("id", "text")]
+user_actions <- c("personality", "sentiments", "language")  
+excel_dest_l3 <- label_text(url_api, excel_orig1, user_actions, "UTF-8", 
+                            token, 32, "en", TRUE)
+#write.xlsx(excel_dest_l3, "excel_dest_l3.xlsx")
 }
 
 }
 \seealso{
-\code{\link{get_emotion}}, \code{\link{get_sentiment}},
-\code{\link{get_bua_action}}, \code{\link{get_bua_fact}},
-\code{\link{get_bua_self}}, \code{\link{get_bua_personality}},
-\code{\link{get_bua_info}}
+\code{\link{get_communic_style}}, \code{\link{get_emotion}}, 
+\code{\link{get_ekman_emotion}}, \code{\link{get_language_detection}}, 
+\code{\link{get_personality}}, \code{\link{get_sentiment}}, 
+\code{\link{get_topic_sentiment}}
 }
 \author{
 Symanto

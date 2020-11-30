@@ -1,0 +1,21 @@
+template:
+  params:
+    bootswatch: cerulean
+    
+authors:
+  Guillermo Vinue: 
+    html: Symanto
+    href: https://www.symanto.com/
+    
+navbar:
+  right:
+   - icon: fa-linkedin 
+     href: https://www.linkedin.com/company/1220760/
+   - icon: fa-twitter
+     href: https://twitter.com/SymantoAI
+   - icon: fa-facebook
+     href: https://www.facebook.com/SymantoAI/
+   - icon: fa-youtube
+     href: https://www.youtube.com/channel/UCRubg2VDTS1nV-jexcye2Vw
+   - icon: fa-github
+     href: https://github.com/symanto-research

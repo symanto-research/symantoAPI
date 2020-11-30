@@ -1,19 +1,20 @@
-#' Sentiments
+#' Ekman's emotions
 #'
-#' @aliases get_sentiment
+#' @aliases get_ekman_emotion
 #'
 #' @description
-#' For a text written in a given language, this function extracts the sentiment 
-#' that it conveys. Returned labels are \emph{positive} and \emph{negative}.
+#' For a text written in a given language, this function extracts the Ekman's 
+#' emotions that it conveys. Returned labels are \emph{anger}, \emph{disgust}, 
+#' \emph{fear}, \emph{joy}, \emph{no_emotion}, \emph{sadness} and \emph{surprise}.
 #'
 #' @usage
-#' get_sentiment(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
 #'
 #' @param url_api URL to the API.
-#' @param text String with the texts. A set of maximum 32 texts is allowed.
+#' @param text String with the texts. A set of maximum 512 texts is allowed.
 #' @param language Language of the text. Supported languages are 
 #' "en" (English), "de" (German) and "es" (Spanish). 
-#' @param all Boolean. If TRUE, all the probabilities 
+#' @param all Boolean. If TRUE, all the probabilities
 #' are displayed. If FALSE, only the largest probability is displayed.
 #' @param encoding Character encoding. Default "UTF-8".
 #' @param token The access token.
@@ -29,6 +30,9 @@
 #' In the first case, add a curly bracket after the first box bracket and 
 #' before the last box bracket. In the second case, add the curly brackets
 #' for every set of id, text and language.
+#' 
+#' An explanation of the Ekman's foundations can be found 
+#' \href{https://www.paulekman.com/universal-emotions/}{here.}
 #'
 #' @return
 #' A data frame with the texts and the probabilities of the 
@@ -46,41 +50,41 @@
 #' # English:
 #' text <- "I love the service."
 #' language <- "en"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, TRUE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # German:
 #' text <- "Ich bin sehr zufrieden."
 #' language <- "de"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, TRUE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # Spanish:
 #' text <- "Estoy muy contento."
 #' language <- "es"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, TRUE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # For more than one text:
 #' # English:
 #' df <- data.frame(text = c("love", "hate"), language = c("en", "en"))
 #' text <- df$text
 #' language <- df$language
-#' get_sentiment(url_api, text, language, all = TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, all = FALSE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, all = TRUE, "UTF-8", token)
+#' get_ekman_emotion(url_api, text, language, all = FALSE, "UTF-8", token)
 #' }
 #' 
 #' @export
 
-get_sentiment <- function(url_api, text, language, all = FALSE, encoding = "UTF-8", token) {
+get_ekman_emotion <- function(url_api, text, language, all = FALSE, encoding = "UTF-8", token) {
   predictions <- probability <- prediction <- id <- NULL
   
   text <- gsub("\\\"", "'", text)
   # More special characters (\ < > |):
   spec_char <- "\\\\|<|>|\\|"
   text <- gsub(spec_char, "", text)
-
-  url <- paste(url_api, "/sentiment?all=", tolower(all), "&api_key=", token, sep = "")
+  
+  url <- paste(url_api, "/ekman-emotion?all=", tolower(all), "&api_key=", token, sep = "")
   
   headers <- c(`Content-Type` = 'application/json')
   
@@ -106,6 +110,8 @@ get_sentiment <- function(url_api, text, language, all = FALSE, encoding = "UTF-
       pivot_wider(names_from = prediction, values_from = probability) %>%
       as.data.frame() %>%
       rename(text = id)
+    
+    colnames(info)[-1] <- gsub("-", "_", paste(colnames(info)[-1], "_ekman", sep = ""))
   }
   
   return(info)

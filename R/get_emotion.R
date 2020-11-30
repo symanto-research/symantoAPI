@@ -1,55 +1,74 @@
-#' Get sentiment from a text
+#' Emotions
 #'
 #' @aliases get_emotion
 #'
 #' @description
-#' For a text written in a given language, this function extracts the sentiment 
-#' it conveys. Returned labels are "anger", "joy", "love", "sadness" and 
-#' unrecognized".
+#' For a text written in a given language, this function extracts the emotions that
+#' it conveys. Returned labels are \emph{anger}, \emph{joy}, \emph{love}, 
+#' \emph{sadness} and \emph{surprise}.
 #'
 #' @usage
-#' get_emotion(text, language, all = FALSE, encoding = "UTF-8", token)
+#' get_emotion(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
 #'
-#' @param text String with the text.
-#' @param language String with the language. Supported languages are 
+#' @param url_api URL to the API.
+#' @param text String with the texts. A set of maximum 512 texts is allowed.
+#' @param language Language of the text. Supported languages are 
 #' "en" (English), "de" (German) and "es" (Spanish). 
-#' @param all Boolean. If TRUE, all the sentiments probabilities
+#' @param all Boolean. If TRUE, all the probabilities
 #' are displayed. If FALSE, only the largest probability is displayed.
 #' @param encoding Character encoding. Default "UTF-8".
 #' @param token The access token.
 #'
+#' @note 
+#' The type of array for one text is: \cr
+#' data <- "[{\"id\":\"1\",\"text\":\"love\",\"language\":\"en\"}]" \cr
+#' For more than one text is: \cr
+#' data <- "[{\"id\":\"1\",\"text\":\"love\",\"language\":\"en\"}, 
+#' \cr
+#'           {\"id\":\"2\",\"text\":\"hate\",\"language\":\"en\"}]" \cr
+#' (write it in one line). 
+#' In the first case, add a curly bracket after the first box bracket and 
+#' before the last box bracket. In the second case, add the curly brackets
+#' for every set of id, text and language.
+#'
 #' @return
-#' A data frame with columns:
-#' \enumerate{
-#'   \item text Text analyzed.
-#'   \item emotion Emotion that the text conveys.
-#'   \item probab Probability of the emotion returned.
-#' }
+#' A data frame with the texts and the probabilities of the 
+#' psychological features obtained.
 #'
 #' @author
 #' Symanto
 #'
 #' @examples
 #' \dontrun{
-#' token <- "Request your API Key: https://developer.symanto.net/"
+#' token <- "Request your API Key: https://developers.symanto.net/signup"
+#' url_api <- "https://api.symanto.net"
+#' 
+#' # For only one text:
 #' # English:
-#' text <- "I am very happy"
+#' text <- "I love the service."
 #' language <- "en"
-#' get_emotion(text, language, TRUE, "UTF-8", token)
-#' get_emotion(text, language, FALSE, "UTF-8", token)
+#' get_emotion(url_api, text, language, TRUE, "UTF-8", token)
+#' get_emotion(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # German:
-#' text <- "Ich bin sehr zufrieden"
+#' text <- "Ich bin sehr zufrieden."
 #' language <- "de"
-#' get_emotion(text, language, TRUE, "UTF-8", token)
+#' get_emotion(url_api, text, language, TRUE, "UTF-8", token)
+#' get_emotion(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # Spanish:
-#' text <- "Estoy muy contento"
+#' text <- "Estoy muy contento."
 #' language <- "es"
-#' gs <- get_emotion(text, language, TRUE, "UTF-8", token)
-#' gs
-#' # Probabilities sum indeed one:
-#' sum(gs[grepl("prob", names(gs))])
+#' get_emotion(url_api, text, language, TRUE, "UTF-8", token)
+#' get_emotion(url_api, text, language, FALSE, "UTF-8", token)
+#' 
+#' # For more than one text:
+#' # English:
+#' df <- data.frame(text = c("love", "hate"), language = c("en", "en"))
+#' text <- df$text
+#' language <- df$language
+#' get_emotion(url_api, text, language, all = TRUE, "UTF-8", token)
+#' get_emotion(url_api, text, language, all = FALSE, "UTF-8", token)
 #' }
 #'
 #' @importFrom httr POST add_headers content
@@ -57,30 +76,40 @@
 #' 
 #' @export
 
-get_emotion <- function(text, language, all = FALSE, encoding = "UTF-8", token) {
-  url <- paste("https://api.symanto.net/api/v1/emotion?all=", tolower(all),
-               "&api_key=", token, sep = "")
+get_emotion <- function(url_api, text, language, all = FALSE, encoding = "UTF-8", token) {
+  predictions <- probability <- prediction <- id <- NULL
+  
+  text <- gsub("\\\"", "'", text)
+  # More special characters (\ < > |):
+  spec_char <- "\\\\|<|>|\\|"
+  text <- gsub(spec_char, "", text)
+  
+  url <- paste(url_api, "/emotion?all=", tolower(all), "&api_key=", token, sep = "")
   
   headers <- c(`Content-Type` = 'application/json')
   
-  data <- paste("[{\"id\":\"", text, "\",\"language\":\"", language,  
-                "\",\"text\":\"", text, "\"}]", sep = "")
+  data_aux <- paste("{\"id\":\"", text, 
+                    "\",\"text\":\"", text, 
+                    "\",\"language\":\"", language, "\"}", 
+                    sep = "", collapse = ",")
+  data <- paste("[", data_aux, "]", sep = "")
   
   response <- POST(url = url, add_headers(.headers = headers), body = data)
-  text_info <- content(response, "text", encoding = encoding)
-  json_info <- fromJSON(text_info, flatten = TRUE)
   
-  info <- as.data.frame(t(unlist(json_info)), stringsAsFactors = FALSE)
-  
-  if (all) {
-   colnames(info) <- c("text", 
-                       paste("emotion", 1:6, sep = ""), 
-                       paste("probab", 1:6, sep = "")) 
-   info[grep("probab", names(info))] <- round(as.numeric(info[grep("probab", 
-                                                                 names(info))]), 3)
+  if (response$status_code != 200) {
+    info <- NULL
   }else{
-    colnames(info) <- c("text", "emotion", "probab")
-    info$probab <- round(as.numeric(info$probab), 3)
+    text_info <- content(response, "text", encoding = encoding)
+    json_info <- fromJSON(text_info, flatten = TRUE)
+    info_aux <- as.data.frame(unnest(json_info, predictions))
+    
+    # The rounding from https://biostatmatt.com/archives/2902 does not
+    # sum 1 neither because the original computed probabilities do not.
+    info <- info_aux %>% 
+      mutate(probability = round(probability, 3)) %>%
+      pivot_wider(names_from = prediction, values_from = probability) %>%
+      as.data.frame() %>%
+      rename(text = id)
   }
   
   return(info)

@@ -1,19 +1,23 @@
-#' Sentiments
+#' Personality traits
 #'
-#' @aliases get_sentiment
+#' @aliases get_personality
 #'
 #' @description
-#' For a text written in a given language, this function extracts the sentiment 
-#' that it conveys. Returned labels are \emph{positive} and \emph{negative}.
+#' Personality traits evaluate the content and writing style to determine how the 
+#' author makes decisions. The model identifies whether an author is \emph{emotional}
+#' (relationship-oriented, focusing on social values and empathy) or \emph{rational} 
+#' (objective and pragmatic, focusing on facts and logical deduction).
 #'
 #' @usage
-#' get_sentiment(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
+#' get_personality(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
 #'
 #' @param url_api URL to the API.
 #' @param text String with the texts. A set of maximum 32 texts is allowed.
-#' @param language Language of the text. Supported languages are 
-#' "en" (English), "de" (German) and "es" (Spanish). 
-#' @param all Boolean. If TRUE, all the probabilities 
+#' @param language Language of the text. Supported languages are
+#' "ar" (Arabic), "de" (German), "en" (English), "es" (Spanish), "fr" (French), 
+#' "it" (Italian), "nl" (Dutch), "pt" (Portuguese), "ru" (Russian), "tr" (Turkish)
+#'  and "zh" (Chinese).
+#' @param all Boolean. If TRUE, all the probabilities
 #' are displayed. If FALSE, only the largest probability is displayed.
 #' @param encoding Character encoding. Default "UTF-8".
 #' @param token The access token.
@@ -46,41 +50,41 @@
 #' # English:
 #' text <- "I love the service."
 #' language <- "en"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_personality(url_api, text, language, TRUE, "UTF-8", token)
+#' get_personality(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # German:
-#' text <- "Ich bin sehr zufrieden."
+#' text <- "Menschen langweilen sich zu Hause."
 #' language <- "de"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_personality(url_api, text, language, TRUE, "UTF-8", token)
+#' get_personality(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # Spanish:
 #' text <- "Estoy muy contento."
 #' language <- "es"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_personality(url_api, text, language, TRUE, "UTF-8", token)
+#' get_personality(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # For more than one text:
 #' # English:
 #' df <- data.frame(text = c("love", "hate"), language = c("en", "en"))
 #' text <- df$text
 #' language <- df$language
-#' get_sentiment(url_api, text, language, all = TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, all = FALSE, "UTF-8", token)
+#' get_personality(url_api, text, language, all = TRUE, "UTF-8", token)
+#' get_personality(url_api, text, language, all = FALSE, "UTF-8", token)
 #' }
 #' 
 #' @export
 
-get_sentiment <- function(url_api, text, language, all = FALSE, encoding = "UTF-8", token) {
+get_personality <- function(url_api, text, language, all = FALSE, encoding = "UTF-8", token) {
   predictions <- probability <- prediction <- id <- NULL
   
   text <- gsub("\\\"", "'", text)
   # More special characters (\ < > |):
   spec_char <- "\\\\|<|>|\\|"
   text <- gsub(spec_char, "", text)
-
-  url <- paste(url_api, "/sentiment?all=", tolower(all), "&api_key=", token, sep = "")
+  
+  url <- paste(url_api, "/personality?all=", tolower(all), "&api_key=", token, sep = "")
   
   headers <- c(`Content-Type` = 'application/json')
   

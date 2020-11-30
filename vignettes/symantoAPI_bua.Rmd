@@ -1,19 +1,19 @@
 ---
 title: |
   | Symanto Research for Text Analytics
-  | API. Emotions and Sentiments from Texts
+  | API. Insights on texts using Symanto AI technology.
 author: "Symanto"
 date: "`r Sys.Date()`" 
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Symanto Research for Text Analytics. API. Emotions and Sentiments from Texts.}
+  %\VignetteIndexEntry{Symanto Research for Text Analytics. API. Insights on texts using Symanto AI technology.}
   %\VignetteEncoding{UTF-8}
 ---
 
 # Introduction
 
-This document explains how to use the R package **symantoAPI** for doing text analytics. The functionalities available include customized functions to extract a bunch of sentiments and emotions from texts. The main code to call each funtion will be shown.
+This document explains how to use the R package **symantoAPI** for doing text analytics. The methods available extract a bunch of psychological features from texts, by calling both the Symanto Application Programming Interface (Symanto API) and other APIs. The main code to call each funtion is shown below.
 
 ```{r setup, include=FALSE}
 library(knitr)       # For knitting document and include_graphics.
@@ -27,206 +27,163 @@ The R package **symantoAPI** is loaded with the following command:
 library(symantoAPI) 
 ```
 
-# Methods
+The Symanto API is available at this link:
 
-Below is detailed every single method.
-
-## Sentiments
-
-The function **get_sentiment()** allows the user to extract the sentiment expressed in a text, and the probability of accuracy. The input and output of the function are detailed next.
-
-* **INPUT:**
-  + Text to analyze. 
-  + Language in which the text is written. Languages currently available are English, German and Spanish. 
-  + Decision to obtain only the most important sentiment or to obtain all.
-  + Default encoding to retrieve the content of the text is UTF-8.
-  + Token to access the Application Programming Interface (API).
-
-* **OUTPUT:**
-  + Dataframe with the text, the sentiment discovered and the numeric probability.
-
-An example is displayed next. The token (API Key) should be previously requested to the Symanto platform.
-
-```{r token request, eval=FALSE}
-token <- "Request your API Key: https://developer.symanto.net/"
+```{r api}
+url_api <- "https://api.symanto.net"
 ```
 
-```{r get sentiments parameters}
-# English:
-text <- "I am very happy"
+Before using the Symanto API, a token key must be previously requested at [Symanto developer portal.](https://developers.symanto.net/signup)
+
+```{r token request, eval=FALSE}
+token <- "Request your API Key: https://developers.symanto.net/signup"
+```
+
+# Usage note
+
+All the following methods can be run both with single texts and with a bunch of texts. Due to the internal procedure of the computational model developed, the methods available as **get_xxx()** (except for language detection) only allow sets of texts of the same language. In order to obtain the psychological features from a set of texts of different languages, the function **label_text()** must be used.
+
+# Methods
+
+The following toy text will be used for illustrative purposes:
+
+```{r get personality comment}
+text <- "Hello I love the service."
 language <- "en"
 ```
 
-```{r get sentiments, eval=FALSE}
-get_sentiment(text, language, all = FALSE, "UTF-8", token)
+Below is detailed every single method.
+
+### Personality traits
+
+The function **get_personality()** allows the user to obtain personality traits. These traits evaluate the content and writing style to determine how the author makes decisions. The model identifies whether an author is *emotional* (relationship-oriented, focusing on social values and empathy) or *rational* (objective and pragmatic, focusing on facts and logical deduction).
+
+The input and output of the function are detailed next.
+
+* **INPUT:**
+  + URL to the API.
+  + Text to analyze. A set of maximum 32 texts is allowed.
+  + Language in which the text is written. Supported languages are "ar" (Arabic), "de" (German), "en" (English), "es" (Spanish), "fr" (French), "it" (Italian), "nl" (Dutch), "pt" (Portuguese), "ru" (Russian), "tr" (Turkish) and "zh" (Chinese).
+  + Decision to obtain only the most important traits or to obtain all.
+  + Default encoding to retrieve the content of the text is UTF-8.
+  + Token key.
+
+* **OUTPUT:**
+  + Dataframe with the text, the traits discovered and the numeric probability.
+
+An example is displayed next:
+
+```{r get personality, eval=FALSE}
+get_personality(url_api, text, language, all = FALSE, "UTF-8", token)
 ```
 
-```{r get sentiments all, eval=FALSE}
-get_sentiment(text, language, all = TRUE, "UTF-8", token)
+```{r get personality all, eval=FALSE}
+get_personality(url_api, text, language, all = TRUE, "UTF-8", token)
+```
+
+## Communication style
+
+The function **get_communic_style()** detects the communication purpose and style of the text. The style includes: 
+
+* *self-revealing* (sharing one's experience and opinion). 
+
+* *fact-oriented* (focusing on factual information, objective observations or statements). 
+
+* *information-seeking* (posing questions). 
+
+* *action-seeking* (aiming to trigger someone's action by giving recommendation, requests or advice).
+
+Both the inputs and outputs are the same as in the case of personality traits. 
+
+```{r get communication, eval=FALSE}
+get_communic_style(url_api, text, language, all = FALSE, "UTF-8", token)
+```
+
+```{r get communication all, eval=FALSE}
+get_communic_style(url_api, text, language, all = TRUE, "UTF-8", token)
 ```
 
 ## Emotions
 
-Similarly, the function **get_emotion()** allows the user to get the emotions expressed in a text, and the probability of accuracy. Both the inputs and outputs are the same as in the sentiments case. Following the previous example, the same text, language and token are used.
+The function **get_emotion()** allows the user to get the emotions expressed in a text. Retrieved emotions can be *anger*, *joy*, *love*, *sadness* or *surprise*. Supported languages here are "de" (German), "en" (English) and "es" (Spanish).
+
+Both the inputs and outputs are the same as in previous cases, but here a set of maximum 512 texts is allowed.
 
 ```{r get emotions, eval=FALSE}
-get_emotion(text, language, all = FALSE, "UTF-8", token)
+get_emotion(url_api, text, language, all = FALSE, "UTF-8", token)
 ```
 
 ```{r get emotions all, eval=FALSE}
-get_emotion(text, language, all = TRUE, "UTF-8", token)
+get_emotion(url_api, text, language, all = TRUE, "UTF-8", token)
 ```
 
-## Basic User Aspects (BUA)
+## Ekman's emotions
 
-The Basic User Aspects, in short BUAs, define different properties that a user might convey when writing a text. All these properties are encompassed in five concepts: personality, self revealing, information seeking, action seeking and fact oriented. Below is a description of each of them. 
+The function **get_ekman_emotion()** allows the user to get the Ekman's emotions expressed in a text. Retrieved emotions can be *anger*, *disgust*, *fear*, *joy*, *no-emotion*, *sadness* or *surprise*. Supported languages here are "de" (German), "en" (English) and "es" (Spanish).
 
-For all the BUAs R functions, both the inputs and outputs remain the same (or just analogous) as in the sentiments and emotions cases. Following the previous examples, the same token and language are used. The toy text to analyze is different depending on the goal of the BUA.
+Both the inputs and outputs are the same as in previous cases, but here a set of maximum 512 texts is allowed.
 
-### Action seeking
-
-The function **get_bua_action()** investigates the author's intention to create an impact or cause effect, or to exert an influence. Through a request, a direct opinion or an indirect suggestion, the author expects their message to prompt action.
-
-An example is displayed next:
-
-```{r get action comment}
-text <- "We cannot accept the government decisions. We must do something."
-language <- "en"
+```{r get ekman emotions, eval=FALSE}
+get_ekman_emotion(url_api, text, language, all = FALSE, "UTF-8", token)
 ```
 
-```{r get action, eval=FALSE}
-get_bua_action(text, language, all = FALSE, "UTF-8", token)
+```{r get ekman emotions all, eval=FALSE}
+get_ekman_emotion(url_api, text, language, all = TRUE, "UTF-8", token)
 ```
 
-```{r get action all, eval=FALSE}
-get_bua_action(text, language, all = TRUE, "UTF-8", token)
+## Sentiments
+
+The function **get_sentiment()** allows the user to extract the sentiment expressed in a text. Retrieved sentiments can be *positive* or *negative*. Supported languages here are "de" (German), "en" (English) and "es" (Spanish).
+
+Both the inputs and outputs are the same as in previous cases. Here a set of maximum 32 texts is allowed again.
+
+```{r get sentiments, eval=FALSE}
+get_sentiment(url_api, text, language, all = FALSE, "UTF-8", token)
 ```
 
-
-### Fact oriented
-
-The function **get_bua_fact()** investigates the author's intention to express objective and factual information.
-
-An example is displayed next:
-
-```{r get fact comment}
-text <- "Messi is the world's best soccer player."
-language <- "en"
+```{r get sentiments all, eval=FALSE}
+get_sentiment(url_api, text, language, all = TRUE, "UTF-8", token)
 ```
 
-```{r get fact, eval=FALSE}
-get_bua_fact(text, language, all = FALSE, "UTF-8", token)
+## Topic sentiments
+
+The function **get_topic_sentiment()** detects topics and the topic category of each topic. Then, it analyzes the sentiment towards each of the topics mentioned. Supported languages here are "de" (German) and "en" (English).
+
+Both the inputs and outputs are the same as in previous cases, excepting the parameter to show all probabilities, which is not used here. All the detected features will be displayed. The procedure goes here text by text.
+
+```{r get topic sentiments, eval=FALSE}
+get_topic_sentiment(url_api, text, language, "UTF-8", token)
 ```
 
-```{r get fact all, eval=FALSE}
-get_bua_fact(text, language, all = TRUE, "UTF-8", token)
-```
+## Language detection
 
+The function **get_language_detection()** identifies the language of the input text. Any language can be detected. A set of maximum 64 texts is allowed. 
 
-### Self revealing
-
-The function **get_bua_self()** investigates the author's intention to share personal preferences, experiences and feelings.
-
-An example is displayed next:
-
-```{r get self comment}
-text <- "Joker is a great movie."
-language <- "en"
-```
-
-```{r get self, eval=FALSE}
-get_bua_self(text, language, all = FALSE, "UTF-8", token)
-```
-
-```{r get self all, eval=FALSE}
-get_bua_self(text, language, all = TRUE, "UTF-8", token)
-```
-
-
-### Personality
-
-The function **get_bua_personality()** allows the user to analyze personality traits. These traits evaluate the content and writing style to determine how the 
-author makes decisions. The model identifies whether an author is emotional 
-(relationship-oriented, focusing on social values and empathy) or rational 
-(objective and pragmatic, focusing on facts and logical deduction).
-
-An example is displayed next:
-
-```{r get personality comment}
-text <- "People get bored at home."
-language <- "en"
-```
-
-```{r get personality, eval=FALSE}
-get_bua_personality(text, language, all = FALSE, "UTF-8", token)
-```
-
-```{r get personality all, eval=FALSE}
-get_bua_personality(text, language, all = TRUE, "UTF-8", token)
-```
-
-### Information seeking
-
-The function **get_bua_info()** investigates the author's intention to show an active interest in a subject. 
-The message aims to extend knowledge through filling some knowledge gap, 
-receive a reply or reassurance to the communication.
-
-An example is displayed next:
-  
-```{r get info comment}
-text <- "I am interested in good literature."
-language <- "en"
-```
-
-```{r get info, eval=FALSE}
-get_bua_info(text, language, all = FALSE, "UTF-8", token)
-```
-
-```{r get info all, eval=FALSE}
-get_bua_info(text, language, all = TRUE, "UTF-8", token)
-```
-
-### Aggregation call
-
-The function **get_bua()** analyzes all the BUAs together. This is an aggregation call for all the aforementioned BUAs.
-
-```{r get bua comment}
-text <- "I am interested in good literature."
-language <- "en"
-```
-
-```{r get bua, eval=FALSE}
-get_bua(text, language, all = FALSE, "UTF-8", token)
-```
-
-```{r get bua all, eval=FALSE}
-get_bua(text, language, all = TRUE, "UTF-8", token)
+```{r get language, eval=FALSE}
+get_language_detection(url_api, text, "UTF-8", token)
 ```
 
 ## Label texts
 
-The function **label_text()** receives a given (Excel) file with a number of posts and all the empty columns related to sentiments, emotions and Basic User Aspects (BUAs). Then, it fills the columns that the user wants to. Next the input and output of the function are detailed. 
+The function **label_text()** receives a given (Excel) file with a number of posts. Then, it assigns the psychological features that the user wants to. The texts are grouped into smaller subsets of texts of the same language, so the procedure will be faster than going text by text. 
+In the interests of illustration, **symantoAPI** contains the file **excel_orig** with 50 toy texts. The first column is the text identifier. The second column contains the texts. The third column contains the language in which each text was written. 47 texts are written in English and 3 in German.
+
+The function **label_text()** is going to be used with this data set.
+
+Next the input and output of the function are detailed. 
 
 * **INPUT:**
-  + Data frame with the texts to analyze. In the interests of illustration, **symantoAPI** contains the file **excel_orig** that collects three toy texts.
+  + URL to the API.
+  + Data frame with the texts to analyze. It must contain at least one column with the texts, named "Text" or "text". Another column with the language of the texts is optional. Other complementary columns can be also added to be incorporated in the returned data frame.
   + User-defined psychological properties to evaluate. 
   + Default encoding to retrieve the content of the text is UTF-8.
-  + Token to access the Application Programming Interface (API).
+  + Token key.
+  + Texts in blocks: Number of texts in every block. 
+  + If the language of the texts is not available, **get_language_detection()** will be used to assign a language to every text. For the few cases where this tool fails, the assigned language is this parameter provided by the user. Default NULL.
+  + Option to provide a flow of information.
 
 * **OUTPUT:**
-  + The input data frame filled with the probablities related to the 
-psychological properties desired by the user.
-
-Two examples are displayed next. First, let us see how **excel_orig** looks like. The first column is the text identifier. The second column contains the texts. The third column contains the language in which each text was written. The rest of the columns are empty columns.
-
-```{r excel file, echo=FALSE}
-excel_orig[,1:8] %>%
-  kable() %>%
-  kable_styling(bootstrap_options = "striped", full_width = TRUE)
-excel_orig[,9:16] %>%
-  kable() %>%
-  kable_styling(bootstrap_options = "striped", full_width = TRUE)
-```
+  + The input data frame filled with the outputs related to the psychological properties desired by the user.
 
 **NOTE:** In order to load in R an external Excel file, the following code can be used:
 
@@ -235,24 +192,18 @@ library(readxl)
 excel_orig <- read_excel("path_to_file/excel_file.xlsx")
 ```
 
-The same token as in all the previous examples is used. In the following case, all the psychological properties are evaluated, therefore all columns of the origin file are filled.
-
-```{r all label texts, eval=FALSE}
-user_actions <- c("sentiments", "emotions", "action_seeking", "fact_oriented", 
-                  "self_revealing", "personality", "information_seeking")  
-excel_dest <- label_text(excel_orig, user_actions, "UTF-8", token)
-excel_dest
-```
-
-The following example shows that the user can also give a small set of psychological properties to label. In this case, only the colums related to sentiments, facts and personality are filled. The other remain empty.
+The following example shows the results for a subset of psychological properties. In this case, only the colums related to personality traits and sentiments are filled. 
 
 ```{r sample label texts, eval=FALSE}
-user_actions <- c("sentiments", "fact_oriented", "personality")    
-excel_dest <- label_text(excel_orig, user_actions, "UTF-8", token)
+# The vector for all the actions is:
+# user_actions <- c("personality", "communication", "emotions", "ekman_emotions", 
+#                  "sentiments", "topic_sentiments", "language")
+user_actions <- c("personality", "sentiments")  
+excel_dest <- label_text(url_api, excel_orig, user_actions, "UTF-8", token, 32, NULL, TRUE)
 excel_dest
 ```
 
-The output file can be then saved as an Excel file with:
+The output file can then be saved as an Excel file with:
 
 ```{r save excel, eval=FALSE}
 library(openxlsx)

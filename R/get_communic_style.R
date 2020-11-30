@@ -1,23 +1,33 @@
-#' Sentiments
+#' Communication style
 #'
-#' @aliases get_sentiment
+#' @aliases get_communic_style
 #'
 #' @description
-#' For a text written in a given language, this function extracts the sentiment 
-#' that it conveys. Returned labels are \emph{positive} and \emph{negative}.
+#' This function detects the communication purpose and style of the text. 
+#' The style includes: 
+#' \enumerate{
+#' \item \emph{self_revealing} (sharing one's experience and opinion). 
+#' \item \emph{fact_oriented} (focusing on factual information, objective observations 
+#' or statements). 
+#' \item \emph{information_seeking} (posing questions). 
+#' \item \emph{action_seeking} (aiming to trigger someone's action by giving 
+#' recommendation, requests or advice).
+#' }
 #'
 #' @usage
-#' get_sentiment(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
+#' get_communic_style(url_api, text, language, all = FALSE, encoding = "UTF-8", token)
 #'
 #' @param url_api URL to the API.
 #' @param text String with the texts. A set of maximum 32 texts is allowed.
-#' @param language Language of the text. Supported languages are 
-#' "en" (English), "de" (German) and "es" (Spanish). 
-#' @param all Boolean. If TRUE, all the probabilities 
+#' @param language Language of the text. Supported languages are
+#' "ar" (Arabic), "de" (German), "en" (English), "es" (Spanish), "fr" (French), 
+#' "it" (Italian), "nl" (Dutch), "pt" (Portuguese), "ru" (Russian), "tr" (Turkish)
+#'  and "zh" (Chinese).
+#' @param all Boolean. If TRUE, all the probabilities
 #' are displayed. If FALSE, only the largest probability is displayed.
 #' @param encoding Character encoding. Default "UTF-8".
 #' @param token The access token.
-#'
+#' 
 #' @note 
 #' The type of array for one text is: \cr
 #' data <- "[{\"id\":\"1\",\"text\":\"love\",\"language\":\"en\"}]" \cr
@@ -46,41 +56,47 @@
 #' # English:
 #' text <- "I love the service."
 #' language <- "en"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, all = TRUE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, all = FALSE, "UTF-8", token)
 #' 
 #' # German:
-#' text <- "Ich bin sehr zufrieden."
+#' text <- "Menschen langweilen sich zu Hause."
 #' language <- "de"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, TRUE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # Spanish:
 #' text <- "Estoy muy contento."
 #' language <- "es"
-#' get_sentiment(url_api, text, language, TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, FALSE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, TRUE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, FALSE, "UTF-8", token)
 #' 
 #' # For more than one text:
 #' # English:
 #' df <- data.frame(text = c("love", "hate"), language = c("en", "en"))
 #' text <- df$text
 #' language <- df$language
-#' get_sentiment(url_api, text, language, all = TRUE, "UTF-8", token)
-#' get_sentiment(url_api, text, language, all = FALSE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, all = TRUE, "UTF-8", token)
+#' get_communic_style(url_api, text, language, all = FALSE, "UTF-8", token)
 #' }
+#' 
+#' @importFrom tidyr unnest pivot_wider
+#' @importFrom dplyr mutate rename
 #' 
 #' @export
 
-get_sentiment <- function(url_api, text, language, all = FALSE, encoding = "UTF-8", token) {
+get_communic_style <- function(url_api, text, language, all = FALSE, 
+                               encoding = "UTF-8", token) {
   predictions <- probability <- prediction <- id <- NULL
   
   text <- gsub("\\\"", "'", text)
   # More special characters (\ < > |):
   spec_char <- "\\\\|<|>|\\|"
   text <- gsub(spec_char, "", text)
-
-  url <- paste(url_api, "/sentiment?all=", tolower(all), "&api_key=", token, sep = "")
+  
+  #url <- paste("https://api.symanto.net/communication?all=", 
+  #             tolower(all), "&api_key=", token, sep = "")
+  url <- paste(url_api, "/communication?all=", tolower(all), "&api_key=", token, sep = "")
   
   headers <- c(`Content-Type` = 'application/json')
   
@@ -106,6 +122,8 @@ get_sentiment <- function(url_api, text, language, all = FALSE, encoding = "UTF-
       pivot_wider(names_from = prediction, values_from = probability) %>%
       as.data.frame() %>%
       rename(text = id)
+    
+    colnames(info)[-1] <- gsub("-", "_", colnames(info)[-1])
   }
   
   return(info)

@@ -1,19 +1,21 @@
 Package: symantoAPI
 Type: Package
-Title: Text Analytics with Symanto API
+Title: Text Analytics with the Symanto API
 Version: 1.0
-Date: 2020-05-19
+Date: 2020-11-27
 Author: Symanto
-Maintainer: Guillermo Vinue <guillermo.vinue@symanto.net>
+Maintainer: Guillermo Vinue <guillermo.vinue@symanto.com>
 Description: Analysis of text data by calling the Symanto API. 
-	Methods available include the extraction of sentiments, 
-	emotions and basic user aspects.
+	Methods available include the extraction of personality traits,
+	communication style, emotions, Ekman's emotions, sentiments, 
+        topic sentiments and language. Please read the vignette for
+	details.
 License: GPL (>= 2)
-URL: https://www.symanto.net/
+URL: https://www.symanto.com/, https://symanto-research.github.io/symanto-docs/
 Depends: R (>= 3.6.0)
-Imports: httr, jsonlite
+Imports: data.table, dplyr, httr, janitor, jsonlite, magrittr, tidyr
 Suggests: knitr, kableExtra, rmarkdown
 VignetteBuilder: knitr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1

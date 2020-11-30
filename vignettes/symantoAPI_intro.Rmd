@@ -1,13 +1,13 @@
 ---
 title: |
   | Symanto Research for Text Analytics
-  | API. R Package
+  | API. R package.
 author: "Symanto"
 date: "`r Sys.Date()`" 
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Symanto Research for Text Analytics. API. R Package.}
+  %\VignetteIndexEntry{Symanto Research for Text Analytics. API. R package.}
   %\VignetteEncoding{UTF-8}
 ---
 
