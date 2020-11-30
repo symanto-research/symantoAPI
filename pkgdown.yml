@@ -1,0 +1,8 @@
+pandoc: 2.7.3
+pkgdown: 1.6.1
+pkgdown_sha: ~
+articles:
+  symantoAPI_bua: symantoAPI_bua.html
+  symantoAPI_intro: symantoAPI_intro.html
+last_built: 2020-11-30T15:12Z
+
