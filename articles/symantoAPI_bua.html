@@ -119,7 +119,7 @@
 API. Insights on texts using Symanto AI technology.</div></h1>
                         <h4 class="author">Symanto</h4>
             
-            <h4 class="date">2020-11-30</h4>
+            <h4 class="date">2020-12-02</h4>
       
       
       <div class="hidden name"><code>symantoAPI_bua.Rmd</code></div>
@@ -257,12 +257,12 @@ API. Insights on texts using Symanto AI technology.</div></h1>
 <strong>INPUT:</strong>
 <ul>
 <li>URL to the API.</li>
-<li>Data frame with the texts to analyze. It must contain at least one column with the texts, named “Text” or “text”. Another column with the language of the texts is optional. Other complementary columns can be also added to be incorporated in the returned data frame.</li>
+<li>Data frame with the texts to analyze. It must contain at least one column with the texts, named “Text” or “text”. Another column with the language of the texts, named “Language” or “language”, is optional. Other complementary columns can be also added to be incorporated in the returned data frame.</li>
 <li>User-defined psychological properties to evaluate.</li>
 <li>Default encoding to retrieve the content of the text is UTF-8.</li>
 <li>Token key.</li>
 <li>Texts in blocks: Number of texts in every block.</li>
-<li>If the language of the texts is not available, <strong>get_language_detection()</strong> will be used to assign a language to every text. For the few cases where this tool fails, the assigned language is this parameter provided by the user. Default NULL.</li>
+<li>If the language of the texts is not available, <strong>get_language_detection()</strong> will be used to assign a language to every text. For the few cases where this tool does not return a valid language, the assigned language is this parameter provided by the user. In the case when the language is available, this parameter serves to replace those languages that are not allowed by the API. Default “en” (English).</li>
 <li>Option to provide a flow of information.</li>
 </ul>
 </li>
@@ -283,7 +283,7 @@ API. Insights on texts using Symanto AI technology.</div></h1>
 <span class="co"># user_actions &lt;- c("personality", "communication", "emotions", "ekman_emotions", </span>
 <span class="co">#                  "sentiments", "topic_sentiments", "language")</span>
 <span class="va">user_actions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"personality"</span>, <span class="st">"sentiments"</span><span class="op">)</span>  
-<span class="va">excel_dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/label_text.html">label_text</a></span><span class="op">(</span><span class="va">url_api</span>, <span class="va">excel_orig</span>, <span class="va">user_actions</span>, <span class="st">"UTF-8"</span>, <span class="va">token</span>, <span class="fl">32</span>, <span class="cn">NULL</span>, <span class="cn">TRUE</span><span class="op">)</span>
+<span class="va">excel_dest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/label_text.html">label_text</a></span><span class="op">(</span><span class="va">url_api</span>, <span class="va">excel_orig</span>, <span class="va">user_actions</span>, <span class="st">"UTF-8"</span>, <span class="va">token</span>, <span class="fl">32</span>, <span class="st">"en"</span>, <span class="cn">TRUE</span><span class="op">)</span>
 <span class="va">excel_dest</span></code></pre></div>
 <p>The output file can then be saved as an Excel file with:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
