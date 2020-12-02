@@ -9,13 +9,14 @@
 #'
 #' @usage
 #' label_text(url_api, excel_file, user_actions, encoding = "UTF-8", token, 
-#'            texts_in_blocks, user_language = NULL, verbose = FALSE)
+#'            texts_in_blocks, user_language = "en", verbose = FALSE)
 #'
 #' @param url_api URL to the API.
 #' @param excel_file Excel file. It must contain at least one column with the texts,
-#' named "Text" or "text". Another column with the language of the texts is 
-#' optional (see the \code{user_language} parameter below). Other complementary columns 
-#' can be also added to be incorporated in the returned data frame.
+#' named "Text" or "text". Another column with the language of the texts, named
+#' "Language" or "language", is optional (see the \code{user_language} parameter below).
+#' Other complementary columns can be also added to be incorporated in the returned 
+#' data frame.
 #' @param user_actions Vector with the set of psychological properties that the user 
 #' wants to obtain. Possible values are "personality", 
 #' "communication", "emotions", "ekman_emotions", "sentiments", "topic_sentiments" 
@@ -28,12 +29,14 @@
 #' This method is much faster than going text by text.
 #' @param user_language If the language of the texts is not available, 
 #' \code{\link{get_language_detection}} will be used to assign a language to 
-#' every text. For the few cases where this tool fails, the assigned language is
-#' this parameter provided by the user. Default NULL.
+#' every text. For the few cases where this tool does not return a valid language, 
+#' the assigned language is this parameter provided by the user. 
+#' In the case when the language is available, this parameter serves to replace
+#' those languages that are not allowed by the API. Default "en" (English).
 #' @param verbose Provides a flow of information.
 #' 
 #' @note 
-#' The accepted codes for the \code{user_language} param are as follows: 
+#' The accepted codes in the Symanto API for \code{user_language} are as follows: 
 #' "ar" (Arabic), "de" (German), "en" (English), "es" (Spanish),
 #' "fr" (French), "it" (Italian), "nl" (Dutch), "pt" (Portuguese),
 #' "ru" (Russian), "tr" (Turkish) and "zh" (Chinese).
@@ -82,13 +85,13 @@
 #' user_actions <- c("personality", "communication", "emotions", "ekman_emotions", 
 #'                   "sentiments", "topic_sentiments", "language")  
 #' excel_dest_l1 <- label_text(url_api, excel_orig, user_actions, "UTF-8", 
-#'                             token, 5, NULL, TRUE)
+#'                             token, 5, "en", TRUE)
 #' #write.xlsx(excel_dest_l1, "excel_dest_l1.xlsx")
 #' 
 #' # A sample of actions:
 #' user_actions <- c("personality", "sentiments")  
 #' excel_dest_l2 <- label_text(url_api, excel_orig, user_actions, "UTF-8", 
-#'                             token, 32, NULL, TRUE)
+#'                             token, 32, "en", TRUE)
 #' #write.xlsx(excel_dest_l2, "excel_dest_l2.xlsx")
 #' 
 #' excel_orig1 <- excel_orig[, c("id", "text")]
@@ -96,6 +99,14 @@
 #' excel_dest_l3 <- label_text(url_api, excel_orig1, user_actions, "UTF-8", 
 #'                             token, 32, "en", TRUE)
 #' #write.xlsx(excel_dest_l3, "excel_dest_l3.xlsx")
+#' 
+#' # Case when one the input languages is not valid:
+#' user_actions <- c("personality", "sentiments")  
+#' excel_orig2 <- excel_orig[1:3,]
+#' excel_orig2$language[1] <- "es-1"
+#' excel_dest_l4 <- label_text(url_api, excel_orig2, user_actions, "UTF-8", 
+#'                             token, 32, "en", TRUE)
+#' #write.xlsx(excel_dest_l4, "excel_dest_l4.xlsx")
 #' }
 #' 
 #' @importFrom janitor clean_names
@@ -105,11 +116,12 @@
 #' @export
 
 label_text <- function(url_api, excel_file, user_actions, encoding = "UTF-8", token, 
-                       texts_in_blocks, user_language = NULL, verbose = FALSE) {
+                       texts_in_blocks, user_language = "en", verbose = FALSE) {
   text <- NULL
   lang_api <- c("ar", "de", "en", "es", "fr", "it", "nl", "pt", "ru", "tr", "zh")
   lang_three <- c("en", "de", "es")
   lang_two <- c("en", "de")
+  lang_other_api <- c("es-1", "es-2")
   
   if (any(!user_actions %in% c("personality", "communication", "emotions", 
                                "ekman_emotions", "sentiments", 
@@ -145,8 +157,13 @@ label_text <- function(url_api, excel_file, user_actions, encoding = "UTF-8", to
   # the input language of the user.
   
   # stackoverflow split-a-vector-into-chunks
-  if (is.null(user_language)) { # Case: Language available in the data set.
-    df0$language[!df0$language %in% lang_api] <- user_language
+  if ("language" %in% colnames(df0)) { # Case: Language available in the data set.
+    #df0$language[!df0$language %in% lang_api] <- user_language
+    if (url_api == "https://api.symanto.net") {
+      df0$language[!df0$language %in% lang_api] <- user_language
+    }else{
+      df0$language[!df0$language %in% lang_other_api] <- user_language
+    }
     lang_texts <- unique(df0$language)
     blocks <- list()
     for (i in 1:length(lang_texts)) {
@@ -192,10 +209,14 @@ label_text <- function(url_api, excel_file, user_actions, encoding = "UTF-8", to
       break
     }
     
-    if (!is.null(user_language)) {
+    if (!"language" %in% colnames(df0)) { # Case: Language not available, we will need to spot it.
       gla <- get_language_detection(url_api, df0_out$text, "UTF-8", token)
       df0_out$language <- gla$detected_language
-      df0_out$language[!df0_out$language %in% lang_api] <- user_language
+      if (url_api == "https://api.symanto.net") {
+        df0_out$language[!df0_out$language %in% lang_api] <- user_language 
+      }else{
+        df0_out$language[!df0_out$language %in% lang_other_api] <- user_language 
+      }
       
       if (length(unique(df0_out$language)) > 1) {
         subblocks <- split(df0_out, df0_out$language)
@@ -233,8 +254,13 @@ label_text <- function(url_api, excel_file, user_actions, encoding = "UTF-8", to
       if (verbose) {
         print("Emotions:")
       }
-      if (!all(df0_out$language %in% lang_three)) {
-        df0_out$language[!df0_out$language %in% lang_three] <- user_language
+      #if (!all(df0_out$language %in% lang_three)) {
+      #  df0_out$language[!df0_out$language %in% lang_three] <- user_language
+      #}
+      if (url_api == "https://api.symanto.net" & !all(df0_out$language %in% lang_three)) {
+        df0_out$language[!df0_out$language %in% lang_three] <- user_language 
+      }else if (url_api != "https://api.symanto.net" & !all(df0_out$language %in% lang_other_api)) {
+        df0_out$language[!df0_out$language %in% lang_other_api] <- user_language 
       }
       ge <- get_emotion(url_api, df0_out$text, df0_out$language, TRUE, encoding, token)
       df0_out <- left_join(df0_out, ge, by = "text")
@@ -244,8 +270,13 @@ label_text <- function(url_api, excel_file, user_actions, encoding = "UTF-8", to
       if (verbose) {
         print("Ekman's emotions:")
       }
-      if (!all(df0_out$language %in% lang_three)) {
-        df0_out$language[!df0_out$language %in% lang_three] <- user_language
+      #if (!all(df0_out$language %in% lang_three)) {
+      #  df0_out$language[!df0_out$language %in% lang_three] <- user_language
+      #}
+      if (url_api == "https://api.symanto.net" & !all(df0_out$language %in% lang_three)) {
+        df0_out$language[!df0_out$language %in% lang_three] <- user_language 
+      }else if (url_api != "https://api.symanto.net" & !all(df0_out$language %in% lang_other_api)) {
+        df0_out$language[!df0_out$language %in% lang_other_api] <- user_language 
       }
       gekm <- get_ekman_emotion(url_api, df0_out$text, df0_out$language, TRUE, encoding, token)
       df0_out <- left_join(df0_out, gekm, by = "text")
@@ -255,8 +286,13 @@ label_text <- function(url_api, excel_file, user_actions, encoding = "UTF-8", to
       if (verbose) {
         print("Sentiments:")
       }
-      if (!all(df0_out$language %in% lang_three)) {
-        df0_out$language[!df0_out$language %in% lang_three] <- user_language
+      #if (!all(df0_out$language %in% lang_three)) {
+      #  df0_out$language[!df0_out$language %in% lang_three] <- user_language
+      #}
+      if (url_api == "https://api.symanto.net" & !all(df0_out$language %in% lang_three)) {
+        df0_out$language[!df0_out$language %in% lang_three] <- user_language 
+      }else if (url_api != "https://api.symanto.net" & !all(df0_out$language %in% lang_other_api)) {
+        df0_out$language[!df0_out$language %in% lang_other_api] <- user_language 
       }
       gs <- get_sentiment(url_api, df0_out$text, df0_out$language, TRUE, encoding, token)
       df0_out <- left_join(df0_out, gs, by = "text")
@@ -266,8 +302,13 @@ label_text <- function(url_api, excel_file, user_actions, encoding = "UTF-8", to
       if (verbose) {
         print("Topic sentiments:")
       }
-      if (!all(df0_out$language %in% lang_two)) {
-        df0_out$language[!df0_out$language %in% lang_two] <- user_language
+      #if (!all(df0_out$language %in% lang_two)) {
+      #  df0_out$language[!df0_out$language %in% lang_two] <- user_language
+      #}
+      if (url_api == "https://api.symanto.net" & !all(df0_out$language %in% lang_two)) {
+        df0_out$language[!df0_out$language %in% lang_two] <- user_language 
+      }else if (url_api != "https://api.symanto.net" & !all(df0_out$language %in% lang_other_api)) {
+        df0_out$language[!df0_out$language %in% lang_other_api] <- user_language 
       }
       gts <- get_topic_sentiment(url_api, df0_out$text, df0_out$language, encoding, token)
       df0_out <- left_join(df0_out, gts, by = "text")

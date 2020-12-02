@@ -2,7 +2,7 @@ Package: symantoAPI
 Type: Package
 Title: Text Analytics with the Symanto API
 Version: 1.0
-Date: 2020-11-27
+Date: 2020-12-02
 Author: Symanto
 Maintainer: Guillermo Vinue <guillermo.vinue@symanto.com>
 Description: Analysis of text data by calling the Symanto API. 

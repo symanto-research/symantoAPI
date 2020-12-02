@@ -5,15 +5,16 @@
 \title{Label texts}
 \usage{
 label_text(url_api, excel_file, user_actions, encoding = "UTF-8", token, 
-           texts_in_blocks, user_language = NULL, verbose = FALSE)
+           texts_in_blocks, user_language = "en", verbose = FALSE)
 }
 \arguments{
 \item{url_api}{URL to the API.}
 
 \item{excel_file}{Excel file. It must contain at least one column with the texts,
-named "Text" or "text". Another column with the language of the texts is 
-optional (see the \code{user_language} parameter below). Other complementary columns 
-can be also added to be incorporated in the returned data frame.}
+named "Text" or "text". Another column with the language of the texts, named
+"Language" or "language", is optional (see the \code{user_language} parameter below).
+Other complementary columns can be also added to be incorporated in the returned 
+data frame.}
 
 \item{user_actions}{Vector with the set of psychological properties that the user 
 wants to obtain. Possible values are "personality", 
@@ -31,8 +32,10 @@ This method is much faster than going text by text.}
 
 \item{user_language}{If the language of the texts is not available, 
 \code{\link{get_language_detection}} will be used to assign a language to 
-every text. For the few cases where this tool fails, the assigned language is
-this parameter provided by the user. Default NULL.}
+every text. For the few cases where this tool does not return a valid language, 
+the assigned language is this parameter provided by the user. 
+In the case when the language is available, this parameter serves to replace
+those languages that are not allowed by the API. Default "en" (English).}
 
 \item{verbose}{Provides a flow of information.}
 }
@@ -58,7 +61,7 @@ speed, the whole set of texts is splitted into smaller blocks.
 }
 }
 \note{
-The accepted codes for the \code{user_language} param are as follows: 
+The accepted codes in the Symanto API for \code{user_language} are as follows: 
 "ar" (Arabic), "de" (German), "en" (English), "es" (Spanish),
 "fr" (French), "it" (Italian), "nl" (Dutch), "pt" (Portuguese),
 "ru" (Russian), "tr" (Turkish) and "zh" (Chinese).
@@ -82,13 +85,13 @@ url_api <- "https://api.symanto.net"
 user_actions <- c("personality", "communication", "emotions", "ekman_emotions", 
                   "sentiments", "topic_sentiments", "language")  
 excel_dest_l1 <- label_text(url_api, excel_orig, user_actions, "UTF-8", 
-                            token, 5, NULL, TRUE)
+                            token, 5, "en", TRUE)
 #write.xlsx(excel_dest_l1, "excel_dest_l1.xlsx")
 
 # A sample of actions:
 user_actions <- c("personality", "sentiments")  
 excel_dest_l2 <- label_text(url_api, excel_orig, user_actions, "UTF-8", 
-                            token, 32, NULL, TRUE)
+                            token, 32, "en", TRUE)
 #write.xlsx(excel_dest_l2, "excel_dest_l2.xlsx")
 
 excel_orig1 <- excel_orig[, c("id", "text")]
@@ -96,6 +99,14 @@ user_actions <- c("personality", "sentiments", "language")
 excel_dest_l3 <- label_text(url_api, excel_orig1, user_actions, "UTF-8", 
                             token, 32, "en", TRUE)
 #write.xlsx(excel_dest_l3, "excel_dest_l3.xlsx")
+
+# Case when one the input languages is not valid:
+user_actions <- c("personality", "sentiments")  
+excel_orig2 <- excel_orig[1:3,]
+excel_orig2$language[1] <- "es-1"
+excel_dest_l4 <- label_text(url_api, excel_orig2, user_actions, "UTF-8", 
+                            token, 32, "en", TRUE)
+#write.xlsx(excel_dest_l4, "excel_dest_l4.xlsx")
 }
 
 }

@@ -165,7 +165,7 @@ speed, the whole set of texts is splitted into smaller blocks.</p>
     </div>
 
     <pre class="usage"><span class='fu'>label_text</span><span class='op'>(</span><span class='va'>url_api</span>, <span class='va'>excel_file</span>, <span class='va'>user_actions</span>, encoding <span class='op'>=</span> <span class='st'>"UTF-8"</span>, <span class='va'>token</span>, 
-           <span class='va'>texts_in_blocks</span>, user_language <span class='op'>=</span> <span class='cn'>NULL</span>, verbose <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+           <span class='va'>texts_in_blocks</span>, user_language <span class='op'>=</span> <span class='st'>"en"</span>, verbose <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -177,9 +177,10 @@ speed, the whole set of texts is splitted into smaller blocks.</p>
     <tr>
       <th>excel_file</th>
       <td><p>Excel file. It must contain at least one column with the texts,
-named "Text" or "text". Another column with the language of the texts is 
-optional (see the <code>user_language</code> parameter below). Other complementary columns 
-can be also added to be incorporated in the returned data frame.</p></td>
+named "Text" or "text". Another column with the language of the texts, named
+"Language" or "language", is optional (see the <code>user_language</code> parameter below).
+Other complementary columns can be also added to be incorporated in the returned 
+data frame.</p></td>
     </tr>
     <tr>
       <th>user_actions</th>
@@ -207,8 +208,10 @@ This method is much faster than going text by text.</p></td>
       <th>user_language</th>
       <td><p>If the language of the texts is not available, 
 <code><a href='get_language_detection.html'>get_language_detection</a></code> will be used to assign a language to 
-every text. For the few cases where this tool fails, the assigned language is
-this parameter provided by the user. Default NULL.</p></td>
+every text. For the few cases where this tool does not return a valid language, 
+the assigned language is this parameter provided by the user. 
+In the case when the language is available, this parameter serves to replace
+those languages that are not allowed by the API. Default "en" (English).</p></td>
     </tr>
     <tr>
       <th>verbose</th>
@@ -236,7 +239,7 @@ psychological properties desired by the user.</p>
 
     <h2 class="hasAnchor" id="note"><a class="anchor" href="#note"></a>Note</h2>
 
-    <p>The accepted codes for the <code>user_language</code> param are as follows: 
+    <p>The accepted codes in the Symanto API for <code>user_language</code> are as follows: 
 "ar" (Arabic), "de" (German), "en" (English), "es" (Spanish),
 "fr" (French), "it" (Italian), "nl" (Dutch), "pt" (Portuguese),
 "ru" (Russian), "tr" (Turkish) and "zh" (Chinese).</p>
@@ -267,13 +270,13 @@ of the same language are created.</p>
 <span class='va'>user_actions</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"personality"</span>, <span class='st'>"communication"</span>, <span class='st'>"emotions"</span>, <span class='st'>"ekman_emotions"</span>, 
                   <span class='st'>"sentiments"</span>, <span class='st'>"topic_sentiments"</span>, <span class='st'>"language"</span><span class='op'>)</span>  
 <span class='va'>excel_dest_l1</span> <span class='op'>&lt;-</span> <span class='fu'>label_text</span><span class='op'>(</span><span class='va'>url_api</span>, <span class='va'>excel_orig</span>, <span class='va'>user_actions</span>, <span class='st'>"UTF-8"</span>, 
-                            <span class='va'>token</span>, <span class='fl'>5</span>, <span class='cn'>NULL</span>, <span class='cn'>TRUE</span><span class='op'>)</span>
+                            <span class='va'>token</span>, <span class='fl'>5</span>, <span class='st'>"en"</span>, <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='co'>#write.xlsx(excel_dest_l1, "excel_dest_l1.xlsx")</span>
 
 <span class='co'># A sample of actions:</span>
 <span class='va'>user_actions</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"personality"</span>, <span class='st'>"sentiments"</span><span class='op'>)</span>  
 <span class='va'>excel_dest_l2</span> <span class='op'>&lt;-</span> <span class='fu'>label_text</span><span class='op'>(</span><span class='va'>url_api</span>, <span class='va'>excel_orig</span>, <span class='va'>user_actions</span>, <span class='st'>"UTF-8"</span>, 
-                            <span class='va'>token</span>, <span class='fl'>32</span>, <span class='cn'>NULL</span>, <span class='cn'>TRUE</span><span class='op'>)</span>
+                            <span class='va'>token</span>, <span class='fl'>32</span>, <span class='st'>"en"</span>, <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='co'>#write.xlsx(excel_dest_l2, "excel_dest_l2.xlsx")</span>
 
 <span class='va'>excel_orig1</span> <span class='op'>&lt;-</span> <span class='va'>excel_orig</span><span class='op'>[</span>, <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"id"</span>, <span class='st'>"text"</span><span class='op'>)</span><span class='op'>]</span>
@@ -281,6 +284,14 @@ of the same language are created.</p>
 <span class='va'>excel_dest_l3</span> <span class='op'>&lt;-</span> <span class='fu'>label_text</span><span class='op'>(</span><span class='va'>url_api</span>, <span class='va'>excel_orig1</span>, <span class='va'>user_actions</span>, <span class='st'>"UTF-8"</span>, 
                             <span class='va'>token</span>, <span class='fl'>32</span>, <span class='st'>"en"</span>, <span class='cn'>TRUE</span><span class='op'>)</span>
 <span class='co'>#write.xlsx(excel_dest_l3, "excel_dest_l3.xlsx")</span>
+
+<span class='co'># Case when one the input languages is not valid:</span>
+<span class='va'>user_actions</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"personality"</span>, <span class='st'>"sentiments"</span><span class='op'>)</span>  
+<span class='va'>excel_orig2</span> <span class='op'>&lt;-</span> <span class='va'>excel_orig</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>:</span><span class='fl'>3</span>,<span class='op'>]</span>
+<span class='va'>excel_orig2</span><span class='op'>$</span><span class='va'>language</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='st'>"es-1"</span>
+<span class='va'>excel_dest_l4</span> <span class='op'>&lt;-</span> <span class='fu'>label_text</span><span class='op'>(</span><span class='va'>url_api</span>, <span class='va'>excel_orig2</span>, <span class='va'>user_actions</span>, <span class='st'>"UTF-8"</span>, 
+                            <span class='va'>token</span>, <span class='fl'>32</span>, <span class='st'>"en"</span>, <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='co'>#write.xlsx(excel_dest_l4, "excel_dest_l4.xlsx")</span>
 <span class='op'>}</span>
 
 </div></pre>

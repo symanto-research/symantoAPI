@@ -174,12 +174,14 @@ Next the input and output of the function are detailed.
 
 * **INPUT:**
   + URL to the API.
-  + Data frame with the texts to analyze. It must contain at least one column with the texts, named "Text" or "text". Another column with the language of the texts is optional. Other complementary columns can be also added to be incorporated in the returned data frame.
+  + Data frame with the texts to analyze. It must contain at least one column with the texts, named "Text" or "text". Another column with the language of the texts, named
+"Language" or "language", is optional. Other complementary columns can be also added to be incorporated in the returned data frame.
   + User-defined psychological properties to evaluate. 
   + Default encoding to retrieve the content of the text is UTF-8.
   + Token key.
   + Texts in blocks: Number of texts in every block. 
-  + If the language of the texts is not available, **get_language_detection()** will be used to assign a language to every text. For the few cases where this tool fails, the assigned language is this parameter provided by the user. Default NULL.
+  + If the language of the texts is not available, **get_language_detection()** will be used to assign a language to every text. For the few cases where this tool does not return a valid language, the assigned language is this parameter provided by the user. 
+  In the case when the language is available, this parameter serves to replace those languages that are not allowed by the API. Default "en" (English).
   + Option to provide a flow of information.
 
 * **OUTPUT:**
@@ -199,7 +201,7 @@ The following example shows the results for a subset of psychological properties
 # user_actions <- c("personality", "communication", "emotions", "ekman_emotions", 
 #                  "sentiments", "topic_sentiments", "language")
 user_actions <- c("personality", "sentiments")  
-excel_dest <- label_text(url_api, excel_orig, user_actions, "UTF-8", token, 32, NULL, TRUE)
+excel_dest <- label_text(url_api, excel_orig, user_actions, "UTF-8", token, 32, "en", TRUE)
 excel_dest
 ```
 
